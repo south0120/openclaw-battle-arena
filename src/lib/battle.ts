@@ -37,6 +37,11 @@ export interface Battle {
   }
   createdAt: Date
   finishedAt: Date | null
+  // エージェントからの行動宣言（保留中）
+  pendingActions?: {
+    A?: BattleAction
+    B?: BattleAction
+  }
 }
 
 /**
