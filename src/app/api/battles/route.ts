@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateBattleId, type Battle } from '@/lib/battle'
 import { summonAgent } from '@/lib/summon'
-
-// インメモリストレージ（MVP用）
-const battles = new Map<string, Battle>()
+import { saveBattle, getAllBattles } from '@/lib/store'
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +32,7 @@ export async function POST(request: NextRequest) {
       finishedAt: null,
     }
 
-    battles.set(battle.id, battle)
+    saveBattle(battle)
 
     return NextResponse.json({ battle })
   } catch (error) {
@@ -47,9 +45,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  const allBattles = Array.from(battles.values())
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 20)
-
-  return NextResponse.json({ battles: allBattles })
+  const battles = getAllBattles().slice(0, 20)
+  return NextResponse.json({ battles })
 }

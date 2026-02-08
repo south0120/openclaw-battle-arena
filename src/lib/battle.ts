@@ -3,37 +3,24 @@ import type { Agent } from './summon'
 export type ActionType = 'attack' | 'defense' | 'special'
 
 export interface BattleAction {
-  agentId: string
   type: ActionType
   declaration: string // 自由テキスト宣言
-  timestamp: Date
 }
 
 export interface JudgeScore {
-  creativity: number    // 0-10
-  logic: number         // 0-10
-  persuasion: number    // 0-10
-  counter: number       // 0-10
-  consistency: number   // 0-10
   total: number
   reasoning: string
 }
 
 export interface TurnResult {
   turnNumber: number
-  actions: {
-    agentA: BattleAction
-    agentB: BattleAction
-  }
-  scores: {
-    agentA: JudgeScore
-    agentB: JudgeScore
-  }
+  actionA: BattleAction
+  actionB: BattleAction
+  scoreA: JudgeScore
+  scoreB: JudgeScore
   turnWinner: 'A' | 'B' | 'draw'
-  damage: {
-    toA: number
-    toB: number
-  }
+  damageToA: number
+  damageToB: number
 }
 
 export interface Battle {

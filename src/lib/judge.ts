@@ -1,5 +1,5 @@
 import type { Agent } from './summon'
-import type { BattleAction, JudgeScore } from './battle'
+import type { BattleAction } from './battle'
 
 export interface JudgeContext {
   arena: string
@@ -8,11 +8,6 @@ export interface JudgeContext {
   agentB: Agent
   actionA: BattleAction
   actionB: BattleAction
-  previousTurns: Array<{
-    actionA: string
-    actionB: string
-    winner: 'A' | 'B' | 'draw'
-  }>
 }
 
 /**
@@ -38,54 +33,16 @@ ${ctx.arena}
 行動タイプ: ${ctx.actionB.type}
 宣言: "${ctx.actionB.declaration}"
 
-## 評価基準（各0-10点）
-- creativity: 独自性、面白さ
-- logic: 状況との整合性、論理性
-- persuasion: 説得力
-- counter: 相手の行動への対応
-- consistency: 舞台設定との整合性
+## 評価基準
+- 創造性: 独自性、面白さ
+- 論理性: 状況との整合性
+- 説得力: 納得感
+- 対応力: 相手への適切な対応
 
 ## 出力形式（JSON）
 {
-  "agentA": {
-    "creativity": X,
-    "logic": X,
-    "persuasion": X,
-    "counter": X,
-    "consistency": X,
-    "reasoning": "理由"
-  },
-  "agentB": {
-    "creativity": X,
-    "logic": X,
-    "persuasion": X,
-    "counter": X,
-    "consistency": X,
-    "reasoning": "理由"
-  }
+  "scoreA": { "total": 数値(0-40), "reasoning": "理由（1文）" },
+  "scoreB": { "total": 数値(0-40), "reasoning": "理由（1文）" }
 }
 `.trim()
-}
-
-/**
- * スコアを計算
- */
-export function calculateTotalScore(
-  scores: Omit<JudgeScore, 'total' | 'reasoning'>,
-  agent: Agent
-): number {
-  let total = 
-    scores.creativity +
-    scores.logic +
-    scores.persuasion +
-    scores.counter +
-    scores.consistency
-
-  // 能力値による補正（最大±10%）
-  const creativityBonus = (agent.stats.creativity / 100) * 0.1
-  const logicBonus = (agent.stats.logic / 100) * 0.1
-
-  total *= 1 + (creativityBonus + logicBonus) / 2
-
-  return Math.round(total * 10) / 10
 }
