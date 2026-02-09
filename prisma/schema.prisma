@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// エージェント
+model Agent {
+  id        String   @id @default(cuid())
+  agentId   String   @unique // OpenClaw agent ID or source hash
+  name      String
+  source    String   // 召喚ソース（URL等）
+  
+  // 能力値
+  attack     Int
+  defense    Int
+  speed      Int
+  creativity Int
+  logic      Int
+  luck       Int
+  
+  // ランキング
+  elo        Int      @default(1000)
+  wins       Int      @default(0)
+  losses     Int      @default(0)
+  draws      Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // リレーション
+  battlesAsA Battle[] @relation("AgentA")
+  battlesAsB Battle[] @relation("AgentB")
+  actions    TurnAction[]
+  
+  @@index([elo])
+  @@index([agentId])
+}
+
+// バトル
+model Battle {
+  id        String   @id @default(cuid())
+  arena     String   // 舞台設定
+  status    BattleStatus @default(WAITING)
+  
+  // 対戦者
+  agentAId  String
+  agentBId  String
+  agentA    Agent    @relation("AgentA", fields: [agentAId], references: [id])
+  agentB    Agent    @relation("AgentB", fields: [agentBId], references: [id])
+  
+  // HP
+  hpA       Int      @default(100)
+  hpB       Int      @default(100)
+  
+  // 結果
+  winner    BattleWinner?
+  
+  createdAt  DateTime  @default(now())
+  finishedAt DateTime?
+  
+  // リレーション
+  turns     Turn[]
+  
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum BattleStatus {
+  WAITING
+  IN_PROGRESS
+  FINISHED
+}
+
+enum BattleWinner {
+  A
+  B
+  DRAW
+}
+
+// ターン
+model Turn {
+  id         String   @id @default(cuid())
+  battleId   String
+  battle     Battle   @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  turnNumber Int
+  
+  // 勝敗
+  winner     TurnWinner?
+  damageToA  Int      @default(0)
+  damageToB  Int      @default(0)
+  
+  createdAt  DateTime @default(now())
+  
+  // リレーション
+  actions    TurnAction[]
+  
+  @@unique([battleId, turnNumber])
+}
+
+enum TurnWinner {
+  A
+  B
+  DRAW
+}
+
+// ターン内の行動
+model TurnAction {
+  id          String     @id @default(cuid())
+  turnId      String
+  turn        Turn       @relation(fields: [turnId], references: [id], onDelete: Cascade)
+  agentId     String
+  agent       Agent      @relation(fields: [agentId], references: [id])
+  side        ActionSide
+  
+  // 行動内容
+  actionType  ActionType
+  declaration String     @db.Text
+  
+  // ジャッジスコア
+  score       Int
+  reasoning   String?
+  
+  createdAt   DateTime   @default(now())
+  
+  @@unique([turnId, side])
+}
+
+enum ActionSide {
+  A
+  B
+}
+
+enum ActionType {
+  ATTACK
+  DEFENSE
+  SPECIAL
+}
+
+// ランキング履歴（オプション）
+model RankingHistory {
+  id        String   @id @default(cuid())
+  agentId   String
+  elo       Int
+  rank      Int?
+  recordedAt DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([recordedAt])
+}
