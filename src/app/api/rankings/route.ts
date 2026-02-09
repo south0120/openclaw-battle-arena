@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const leaderboard = await getLeaderboard(Math.min(limit, 100))
     
     return NextResponse.json({
-      leaderboard: leaderboard.map((agent, index) => ({
+      leaderboard: leaderboard.map((agent: { id: string; name: string; elo: number; wins: number; losses: number; draws: number }, index: number) => ({
         rank: index + 1,
         ...agent,
         winRate: agent.wins + agent.losses > 0

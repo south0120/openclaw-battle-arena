@@ -1,15 +1,3 @@
-import { PrismaClient } from '@prisma/client'
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
-}
-
 // ELOレーティング計算
 export function calculateElo(
   winnerElo: number,
@@ -33,8 +21,31 @@ export function calculateElo(
   return { newWinnerElo, newLoserElo }
 }
 
+// Prismaクライアント（遅延初期化）
+let prismaClient: any = null
+
+export async function getPrisma() {
+  if (!process.env.DATABASE_URL) {
+    return null
+  }
+  
+  if (!prismaClient) {
+    const { PrismaClient } = await import('@prisma/client')
+    prismaClient = new PrismaClient()
+  }
+  
+  return prismaClient
+}
+
 // ランキング取得
 export async function getLeaderboard(limit: number = 20) {
+  const prisma = await getPrisma()
+  
+  if (!prisma) {
+    // DB未接続時は空配列
+    return []
+  }
+  
   return prisma.agent.findMany({
     orderBy: { elo: 'desc' },
     take: limit,
@@ -51,6 +62,12 @@ export async function getLeaderboard(limit: number = 20) {
 
 // エージェント統計
 export async function getAgentStats(agentId: string) {
+  const prisma = await getPrisma()
+  
+  if (!prisma) {
+    return null
+  }
+  
   const agent = await prisma.agent.findUnique({
     where: { agentId },
     include: {

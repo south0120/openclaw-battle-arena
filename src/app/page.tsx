@@ -5,7 +5,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import Link from 'next/link'
 
 export default function Home() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
@@ -19,7 +19,7 @@ export default function Home() {
       <p className="text-xl text-gray-400 mb-8">
         {t('home.subtitle')}
       </p>
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-wrap justify-center">
         <Link
           href="/summon"
           className="px-6 py-3 bg-arena-primary text-white rounded-lg hover:bg-opacity-80 transition"
@@ -31,6 +31,12 @@ export default function Home() {
           className="px-6 py-3 border border-arena-primary text-arena-primary rounded-lg hover:bg-arena-primary hover:text-white transition"
         >
           {t('home.watch')}
+        </Link>
+        <Link
+          href="/rankings"
+          className="px-6 py-3 border border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-black transition"
+        >
+          🏆 {locale === 'ja' ? 'ランキング' : 'Rankings'}
         </Link>
       </div>
     </main>
