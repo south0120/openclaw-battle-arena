@@ -1,9 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from '@/components/LocaleProvider'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import Link from 'next/link'
 import type { Agent } from '@/lib/summon'
 
 export default function SummonPage() {
+  const { t } = useLocale()
   const [source, setSource] = useState('')
   const [agent, setAgent] = useState<Agent | null>(null)
   const [loading, setLoading] = useState(false)
@@ -29,19 +33,24 @@ export default function SummonPage() {
 
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <Link href="/" className="text-gray-400 hover:text-white">← {t('nav.home')}</Link>
+        <LanguageSwitcher />
+      </div>
+
       <h1 className="text-4xl font-bold text-arena-primary mb-8">
-        🔮 エージェント召喚
+        {t('summon.title')}
       </h1>
 
       <div className="mb-8">
         <label className="block text-gray-400 mb-2">
-          召喚ソース（URL、テキスト、なんでも）
+          {t('summon.source.label')}
         </label>
         <input
           type="text"
           value={source}
           onChange={(e) => setSource(e.target.value)}
-          placeholder="https://github.com/openclaw/battle-arena"
+          placeholder={t('summon.source.placeholder')}
           className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-arena-primary focus:outline-none"
         />
         <button
@@ -49,7 +58,7 @@ export default function SummonPage() {
           disabled={loading || !source.trim()}
           className="mt-4 px-6 py-3 bg-arena-primary text-white rounded-lg hover:bg-opacity-80 transition disabled:opacity-50"
         >
-          {loading ? '召喚中...' : '召喚する'}
+          {loading ? t('summon.loading') : t('summon.button')}
         </button>
       </div>
 
@@ -59,12 +68,12 @@ export default function SummonPage() {
           <p className="text-gray-500 text-sm mb-4 font-mono">{agent.id}</p>
           
           <div className="grid grid-cols-2 gap-4">
-            <StatBar label="Attack" value={agent.stats.attack} color="red" />
-            <StatBar label="Defense" value={agent.stats.defense} color="blue" />
-            <StatBar label="Speed" value={agent.stats.speed} color="yellow" />
-            <StatBar label="Creativity" value={agent.stats.creativity} color="purple" />
-            <StatBar label="Logic" value={agent.stats.logic} color="green" />
-            <StatBar label="Luck" value={agent.stats.luck} color="pink" />
+            <StatBar label={t('stats.attack')} value={agent.stats.attack} color="red" />
+            <StatBar label={t('stats.defense')} value={agent.stats.defense} color="blue" />
+            <StatBar label={t('stats.speed')} value={agent.stats.speed} color="yellow" />
+            <StatBar label={t('stats.creativity')} value={agent.stats.creativity} color="purple" />
+            <StatBar label={t('stats.logic')} value={agent.stats.logic} color="green" />
+            <StatBar label={t('stats.luck')} value={agent.stats.luck} color="pink" />
           </div>
         </div>
       )}

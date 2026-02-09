@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useLocale } from '@/components/LocaleProvider'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 interface Agent {
   id: string
@@ -27,18 +29,19 @@ interface Battle {
 }
 
 export default function BattlesPage() {
+  const { t, locale } = useLocale()
   const [sourceA, setSourceA] = useState('')
   const [sourceB, setSourceB] = useState('')
-  const [arena, setArena] = useState('サイバー空間')
+  const [arena, setArena] = useState('arena.cyber')
   const [battle, setBattle] = useState<Battle | null>(null)
   const [loading, setLoading] = useState(false)
 
   const arenas = [
-    'サイバー空間',
-    '法廷',
-    '詩のバトル',
-    '料理対決',
-    '哲学論争',
+    { key: 'arena.cyber', value: locale === 'ja' ? 'サイバー空間' : 'Cyberspace' },
+    { key: 'arena.court', value: locale === 'ja' ? '法廷' : 'Courtroom' },
+    { key: 'arena.poetry', value: locale === 'ja' ? '詩のバトル' : 'Poetry Battle' },
+    { key: 'arena.cooking', value: locale === 'ja' ? '料理対決' : 'Cooking Showdown' },
+    { key: 'arena.philosophy', value: locale === 'ja' ? '哲学論争' : 'Philosophy Debate' },
   ]
 
   const handleCreateBattle = async () => {
@@ -46,10 +49,11 @@ export default function BattlesPage() {
 
     setLoading(true)
     try {
+      const selectedArena = arenas.find(a => a.key === arena)?.value || arena
       const res = await fetch('/api/battles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sourceA, sourceB, arena }),
+        body: JSON.stringify({ sourceA, sourceB, arena: selectedArena }),
       })
       const data = await res.json()
       setBattle(data.battle)
@@ -62,13 +66,18 @@ export default function BattlesPage() {
 
   return (
     <main className="min-h-screen p-8 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <Link href="/" className="text-gray-400 hover:text-white">← {t('nav.home')}</Link>
+        <LanguageSwitcher />
+      </div>
+
       <h1 className="text-4xl font-bold text-arena-primary mb-8">
-        ⚔️ バトル作成
+        {t('battle.create')}
       </h1>
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div>
-          <label className="block text-gray-400 mb-2">Agent A 召喚ソース</label>
+          <label className="block text-gray-400 mb-2">{t('battle.agentA')}</label>
           <input
             type="text"
             value={sourceA}
@@ -78,7 +87,7 @@ export default function BattlesPage() {
           />
         </div>
         <div>
-          <label className="block text-gray-400 mb-2">Agent B 召喚ソース</label>
+          <label className="block text-gray-400 mb-2">{t('battle.agentB')}</label>
           <input
             type="text"
             value={sourceB}
@@ -90,14 +99,14 @@ export default function BattlesPage() {
       </div>
 
       <div className="mb-6">
-        <label className="block text-gray-400 mb-2">舞台設定</label>
+        <label className="block text-gray-400 mb-2">{t('battle.arena')}</label>
         <select
           value={arena}
           onChange={(e) => setArena(e.target.value)}
           className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-arena-primary focus:outline-none"
         >
           {arenas.map((a) => (
-            <option key={a} value={a}>{a}</option>
+            <option key={a.key} value={a.key}>{t(a.key)}</option>
           ))}
         </select>
       </div>
@@ -107,7 +116,7 @@ export default function BattlesPage() {
         disabled={loading || !sourceA.trim() || !sourceB.trim()}
         className="px-6 py-3 bg-arena-accent text-white rounded-lg hover:bg-opacity-80 transition disabled:opacity-50"
       >
-        {loading ? 'バトル作成中...' : 'バトル作成'}
+        {loading ? t('battle.creating') : t('battle.start')}
       </button>
 
       {battle && (
@@ -115,7 +124,7 @@ export default function BattlesPage() {
           <h2 className="text-2xl font-bold text-white mb-4">
             {battle.agentA.name} vs {battle.agentB.name}
           </h2>
-          <p className="text-gray-400 mb-4">舞台: {battle.arena}</p>
+          <p className="text-gray-400 mb-4">{t('battle.arena')}: {battle.arena}</p>
           
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <AgentCard agent={battle.agentA} label="A" />
@@ -126,7 +135,7 @@ export default function BattlesPage() {
             href={`/battles/${battle.id}`}
             className="inline-block px-6 py-3 bg-arena-primary text-white rounded-lg hover:bg-opacity-80 transition"
           >
-            バトル開始 →
+            {t('battle.goToBattle')}
           </Link>
         </div>
       )}
